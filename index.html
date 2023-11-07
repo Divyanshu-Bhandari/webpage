@@ -1,129 +1,194 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ToDo List</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
+  <title>Mini Project</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+    }
 
-        .container {
-            text-align: center;
-            background-color: #fff;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
-            width: 300px;
-        }
+    input[type="number"] {
+      width: 50px;
+      text-align: center;
+    }
 
-        h1 {
-            color: #333;
-        }
+    button {
+      border: none;
+      background-color: #3498db;
+      color: white;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 5px;
+    }
 
-        .todo-form {
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    button:hover {
+      background-color: #2980b9;
+    }
 
-        input[type="text"] {
-            width: 70%;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ddd;
-            border-top-left-radius: 5px;
-            border-bottom-left-radius: 5px;
-        }
+    #password-display {
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      margin: 20px 0;
+    }
 
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            background-color: #4caf50;
-            color: white;
-            cursor: pointer;
-            border-top-right-radius: 5px;
-            border-bottom-right-radius: 5px;
-        }
+    .form-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-        button:hover {
-            background-color: #45a049;
-        }
+    .form-control {
+      width: 100px;
+      margin: 0 10px;
+    }
 
-        ul {
-            list-style-type: square;
-            padding: 0;
-        }
+    h1 {
+      color: #3498db;
+      margin-bottom: 30px;
+    }
 
-        li {
-            margin: 10px 0;
-            background-color: #f9f9f9;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+    /* Password strength meter */
+    #password-strength-meter {
+      width: 100%;
+      height: 20px;
+      background-color: #ddd;
+      border-radius: 5px;
+      margin: 20px 0;
+    }
 
-        li.completed {
-            text-decoration: line-through;
-            background-color: #ddd;
-            opacity: 0;
-            height: 0;
-            padding: 0;
-            margin: 0;
-        }
-
-        li:hover {
-            background-color: #eee;
-        }
-    </style>
+    #password-strength-meter-fill {
+      height: 100%;
+      border-radius: 5px;
+      background-color: #3498db;
+      text-align: center;
+      color: white;
+      font-size: 14px;
+    }
+  </style>
 </head>
-
 <body>
-    <div class="container">
-        <h1>ToDo List</h1>
-        <div class="todo-form">
-            <input type="text" id="task" placeholder="Enter your task...">
-            <button onclick="addTask()">Add</button>
-        </div>
-        <ul id="task-list"></ul>
-    </div>
-    <script>
-        function addTask() {
-            var taskInput = document.getElementById('task');
-            var taskText = taskInput.value.trim();
+  <h1>Password Generator</h1>
 
-            if (taskText === '') {
-                return;
-            }
+  <div class="form-group">
+    <label for="password-length">Enter the number of characters for your password:</label>
+    <input type="number" id="password-length" value="8" min="8" max="64" class="form-control">
 
-            var taskList = document.getElementById('task-list');
-            var newTask = document.createElement('li');
-            newTask.textContent = taskText;
-            newTask.onclick = function () {
-                this.classList.add('completed');
-                setTimeout(function() {
-                    newTask.style.opacity = 0;
-                    newTask.style.height = '0px';
-                    newTask.style.padding = '0px';
-                    newTask.style.margin = '0px';
-                }, 300);
-            };
+</div>
+<br>
+<button id="generate-button">Generate Password</button>
+<button id="copy-button" style="display:none">Copy Password</button>
+<br>
+<br>
+<p>Your generated password:</p>
+<p id="password-display"></p>
 
-            taskList.appendChild(newTask);
-            taskInput.value = '';
-        }
-    </script>
+<div id="password-strength-meter">
+  <div id="password-strength-meter-fill"></div>
+</div>
+<script>
+ 
+var passwordLengthInput = document.getElementById('password-length');
+var passwordDisplay = document.getElementById('password-display');
+var copyButton = document.getElementById('copy-button');
+// get password strength meter elements
+var passwordStrengthMeter = document.getElementById('password-strength-meter');
+var passwordStrengthMeterFill = document.getElementById('password-strength-meter-fill');
+
+var generateButton = document.getElementById('generate-button');
+generateButton.addEventListener('click', generatePassword);
+
+copyButton.addEventListener('click', copyPassword);
+
+// generatePassword function
+function generatePassword() {
+
+var passwordLength = passwordLengthInput.value;
+
+// check if password length is valid
+if (passwordLength < 8 || passwordLength > 64) {
+  passwordDisplay.textContent = 'Error: password length must be between 8 and 64 characters.';
+  return;
+}
+
+// generate password
+var password = '';
+var possibleCharacters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=';
+for (var i = 0; i < passwordLength; i++) {
+  password += possibleCharacters.charAt(Math.floor(Math.random() * possibleCharacters.length));
+}
+
+// update password strength meter
+updatePasswordStrengthMeter(password);
+
+// display password and show copy button
+passwordDisplay.textContent = password;
+copyButton.style.display = 'inline';
+}
+
+// updatePasswordStrengthMeter function
+function updatePasswordStrengthMeter(password) {
+
+var strengthLevel = 0;
+
+// increase strength level for each rule
+if (password.length >= 8) {
+  strengthLevel++;
+}
+if (password.match(/[a-z]/g) && password.match(/[A-Z]/g)) {
+  strengthLevel++;
+}
+if (password.match(/[0-9]/g)) {
+  strengthLevel++;
+}
+if (password.match(/[!@#$%^&*()_+-=]/g)) {
+  strengthLevel++;
+}
+
+
+var strengthText;
+var strengthColor;
+if (strengthLevel === 0) {
+  strengthText = 'Weak';
+  strengthColor = '#e74c3c';} else if (strengthLevel === 1) {
+strengthText = 'Fair';
+strengthColor = '#f39c12';
+} else if (strengthLevel === 2) {
+strengthText = 'Good';
+strengthColor = '#f1c40f';
+} else if (strengthLevel === 3) {
+strengthText = 'Strong';
+strengthColor = '#2ecc71';
+} else {
+strengthText = 'Very Strong';
+strengthColor = '#3498db';
+}
+
+
+passwordStrengthMeterFill.style.width = (strengthLevel * 25) + '%';
+passwordStrengthMeterFill.style.backgroundColor = strengthColor;
+passwordStrengthMeterFill.textContent = strengthText;
+}
+
+// copyPassword function
+function copyPassword() {
+
+var range = document.createRange();
+range.selectNode(passwordDisplay);
+window.getSelection().removeAllRanges();
+window.getSelection().addRange(range);
+
+// copy selected text to clipboard
+document.execCommand('copy');
+
+// deselect text and show copied message
+window.getSelection().removeAllRanges();
+passwordDisplay.textContent = 'Copied to clipboard!';
+copyButton.style.display = 'none';
+}
+</script>
+
 </body>
-
 </html>
